@@ -31,27 +31,22 @@ st.info(
     "stages occur independently using probability calculations."
 )
 
+
+# --------------------------------------------------
+# HOW SMARTINSPECT WORKS
+# --------------------------------------------------
+
 with st.expander("📘 How SmartInspect Works"):
 
     st.write("### Events")
 
-    st.write(
-        "**A** = Product fails Stage 1"
-    )
-
-    st.write(
-        "**B** = Product fails Stage 2"
-    )
-
-    st.write(
-        "**C** = Product fails Stage 3"
-    )
+    st.write("**A** = Product fails Stage 1")
+    st.write("**B** = Product fails Stage 2")
+    st.write("**C** = Product fails Stage 3")
 
     st.write("### Pairwise Independence")
 
-    st.latex(
-        r"P(A \cap B) = P(A)P(B)"
-    )
+    st.latex(r"P(A \cap B) = P(A)P(B)")
 
     st.write(
         "The same comparison is performed for A & C and B & C."
@@ -101,17 +96,19 @@ st.sidebar.caption(
     "Statistical Measures Mini Project"
 )
 
+
 # --------------------------------------------------
-# CSV UPLOAD
+# MAIN APPLICATION
 # --------------------------------------------------
 
 if uploaded_file is not None:
 
     data = pd.read_csv(uploaded_file)
 
-    st.success("CSV file uploaded successfully!")
+    st.success(
+        "CSV file uploaded successfully!"
+    )
 
-    # Required columns
     required_columns = [
         "Product_ID",
         "Stage_1",
@@ -119,22 +116,57 @@ if uploaded_file is not None:
         "Stage_3"
     ]
 
-    # Check CSV format
-    if all(column in data.columns for column in required_columns):
+
+    # --------------------------------------------------
+    # CHECK CSV FORMAT
+    # --------------------------------------------------
+
+    if all(
+        column in data.columns
+        for column in required_columns
+    ):
 
         # --------------------------------------------------
-        # DASHBOARD
+        # BASIC DATA CALCULATIONS
         # --------------------------------------------------
 
         total_products = len(data)
 
-        stage1_failures = (data["Stage_1"] == "Fail").sum()
-        stage2_failures = (data["Stage_2"] == "Fail").sum()
-        stage3_failures = (data["Stage_3"] == "Fail").sum()
+        stage1_failures = (
+            data["Stage_1"] == "Fail"
+        ).sum()
 
-        stage1_rate = stage1_failures / total_products * 100
-        stage2_rate = stage2_failures / total_products * 100
-        stage3_rate = stage3_failures / total_products * 100
+        stage2_failures = (
+            data["Stage_2"] == "Fail"
+        ).sum()
+
+        stage3_failures = (
+            data["Stage_3"] == "Fail"
+        ).sum()
+
+
+        stage1_rate = (
+            stage1_failures
+            / total_products
+            * 100
+        )
+
+        stage2_rate = (
+            stage2_failures
+            / total_products
+            * 100
+        )
+
+        stage3_rate = (
+            stage3_failures
+            / total_products
+            * 100
+        )
+
+
+        # --------------------------------------------------
+        # DASHBOARD
+        # --------------------------------------------------
 
         st.header("📊 Inspection Dashboard")
 
@@ -147,6 +179,7 @@ if uploaded_file is not None:
         )
 
         st.markdown("---")
+
 
         col1, col2, col3, col4 = st.columns(4)
 
@@ -178,29 +211,48 @@ if uploaded_file is not None:
         st.header("📐 Statistical Measures")
 
         numeric_data = data[
-            ["Stage_1", "Stage_2", "Stage_3"]
+            [
+                "Stage_1",
+                "Stage_2",
+                "Stage_3"
+            ]
         ].replace({
             "Pass": 0,
             "Fail": 1
         })
 
+
         statistical_results = []
+
 
         for stage in numeric_data.columns:
 
             statistical_results.append({
-                "Stage": stage.replace("_", " "),
-                "Mean": numeric_data[stage].mean(),
-                "Median": numeric_data[stage].median(),
-                "Mode": numeric_data[stage].mode()[0],
-                "Standard Deviation": numeric_data[stage].std()
+
+                "Stage":
+                    stage.replace("_", " "),
+
+                "Mean":
+                    numeric_data[stage].mean(),
+
+                "Median":
+                    numeric_data[stage].median(),
+
+                "Mode":
+                    numeric_data[stage].mode()[0],
+
+                "Standard Deviation":
+                    numeric_data[stage].std()
             })
+
 
         statistics_df = pd.DataFrame(
             statistical_results
         )
 
+
         statistics_df = statistics_df.round(3)
+
 
         st.dataframe(
             statistics_df,
@@ -215,35 +267,56 @@ if uploaded_file is not None:
 
         st.header("🎲 Probability Analysis")
 
-        # Events
+
         A = data["Stage_1"] == "Fail"
+
         B = data["Stage_2"] == "Fail"
+
         C = data["Stage_3"] == "Fail"
 
-        # Individual probabilities
+
         P_A = A.mean()
+
         P_B = B.mean()
+
         P_C = C.mean()
 
-        # Joint probabilities
-        P_AB = (A & B).mean()
-        P_AC = (A & C).mean()
-        P_BC = (B & C).mean()
-        P_ABC = (A & B & C).mean()
+
+        P_AB = (
+            A & B
+        ).mean()
+
+        P_AC = (
+            A & C
+        ).mean()
+
+        P_BC = (
+            B & C
+        ).mean()
+
+        P_ABC = (
+            A & B & C
+        ).mean()
 
 
-        # Probability cards
+        # --------------------------------------------------
+        # INDIVIDUAL PROBABILITIES
+        # --------------------------------------------------
+
         p1, p2, p3 = st.columns(3)
+
 
         p1.metric(
             "P(A) – Stage 1 Failure",
             f"{P_A:.3f}"
         )
 
+
         p2.metric(
             "P(B) – Stage 2 Failure",
             f"{P_B:.3f}"
         )
+
 
         p3.metric(
             "P(C) – Stage 3 Failure",
@@ -251,27 +324,40 @@ if uploaded_file is not None:
         )
 
 
-        # Joint probabilities
-        st.subheader("Joint Probabilities")
+        # --------------------------------------------------
+        # JOINT PROBABILITIES
+        # --------------------------------------------------
+
+        st.subheader(
+            "Joint Probabilities"
+        )
+
 
         probability_df = pd.DataFrame({
+
             "Event": [
                 "A ∩ B",
                 "A ∩ C",
                 "B ∩ C",
                 "A ∩ B ∩ C"
             ],
+
             "Probability": [
                 P_AB,
                 P_AC,
                 P_BC,
                 P_ABC
             ]
+
         })
 
-        probability_df["Probability"] = (
-            probability_df["Probability"].round(3)
-        )
+
+        probability_df[
+            "Probability"
+        ] = probability_df[
+            "Probability"
+        ].round(3)
+
 
         st.dataframe(
             probability_df,
@@ -284,48 +370,74 @@ if uploaded_file is not None:
         # PAIRWISE INDEPENDENCE
         # --------------------------------------------------
 
-        st.header("🔗 Pairwise Independence Analysis")
+        st.header(
+            "🔗 Pairwise Independence Analysis"
+        )
+
 
         tolerance = 0.05
 
+
         expected_AB = P_A * P_B
+
         expected_AC = P_A * P_C
+
         expected_BC = P_B * P_C
 
-        difference_AB = abs(P_AB - expected_AB)
-        difference_AC = abs(P_AC - expected_AC)
-        difference_BC = abs(P_BC - expected_BC)
+
+        difference_AB = abs(
+            P_AB - expected_AB
+        )
+
+        difference_AC = abs(
+            P_AC - expected_AC
+        )
+
+        difference_BC = abs(
+            P_BC - expected_BC
+        )
+
 
         pairwise_results = pd.DataFrame({
+
             "Event Pair": [
                 "A & B",
                 "A & C",
                 "B & C"
             ],
+
             "Observed P(A ∩ B)": [
                 P_AB,
                 P_AC,
                 P_BC
             ],
+
             "Expected P(A)P(B)": [
                 expected_AB,
                 expected_AC,
                 expected_BC
             ],
+
             "Difference": [
                 difference_AB,
                 difference_AC,
                 difference_BC
             ]
+
         })
 
-        pairwise_results = pairwise_results.round(3)
+
+        pairwise_results = (
+            pairwise_results.round(3)
+        )
+
 
         st.dataframe(
             pairwise_results,
             use_container_width=True,
             hide_index=True
         )
+
 
         st.info(
             "For this educational project, a difference of 0.05 or less "
@@ -337,95 +449,114 @@ if uploaded_file is not None:
         # PAIRWISE RESULTS
         # --------------------------------------------------
 
-        st.subheader("Pairwise Independence Results")
+        st.subheader(
+            "Pairwise Independence Results"
+        )
+
 
         st.write(
             "Two events are approximately independent when "
             "P(A ∩ B) is close to P(A)P(B)."
         )
 
+
         pair1, pair2, pair3 = st.columns(3)
 
+
         if difference_AB <= tolerance:
+
             pair1.success(
-                "A & B\n\nApproximately Independent"
+                "A & B\n\n"
+                "Approximately Independent"
             )
+
         else:
+
             pair1.error(
-                "A & B\n\nNot Independent"
+                "A & B\n\n"
+                "Not Independent"
             )
 
+
         if difference_AC <= tolerance:
+
             pair2.success(
-                "A & C\n\nApproximately Independent"
+                "A & C\n\n"
+                "Approximately Independent"
             )
+
         else:
+
             pair2.error(
-                "A & C\n\nNot Independent"
+                "A & C\n\n"
+                "Not Independent"
             )
 
+
         if difference_BC <= tolerance:
+
             pair3.success(
-                "B & C\n\nApproximately Independent"
+                "B & C\n\n"
+                "Approximately Independent"
             )
+
         else:
+
             pair3.error(
-                "B & C\n\nNot Independent"
+                "B & C\n\n"
+                "Not Independent"
             )
-
-        if difference_AB <= tolerance:
-            pair1.success("A & B\nApproximately Independent")
-        else:
-            pair1.error("A & B\nNot Independent")
-
-        if difference_AC <= tolerance:
-            pair2.success("A & C\nApproximately Independent")
-        else:
-            pair2.error("A & C\nNot Independent")
-
-        if difference_BC <= tolerance:
-            pair3.success("B & C\nApproximately Independent")
-        else:
-            pair3.error("B & C\nNot Independent")
 
 
         # --------------------------------------------------
         # MUTUAL INDEPENDENCE
         # --------------------------------------------------
 
-        st.header("🔗 Mutual Independence Analysis")
+        st.header(
+            "🔗 Mutual Independence Analysis"
+        )
+
 
         st.write(
             "For mutual independence, all three events must satisfy:"
         )
 
+
         st.latex(
             r"P(A \cap B \cap C) = P(A)P(B)P(C)"
         )
 
-        expected_ABC = P_A * P_B * P_C
+
+        expected_ABC = (
+            P_A * P_B * P_C
+        )
+
 
         mutual_difference = abs(
             P_ABC - expected_ABC
         )
 
-        # Results
+
         m1, m2, m3 = st.columns(3)
+
 
         m1.metric(
             "Observed P(A ∩ B ∩ C)",
             f"{P_ABC:.3f}"
         )
 
+
         m2.metric(
             "Expected P(A)P(B)P(C)",
             f"{expected_ABC:.3f}"
         )
 
+
         m3.metric(
             "Difference",
             f"{mutual_difference:.3f}"
         )
+
 
         if mutual_difference <= tolerance:
 
@@ -441,96 +572,49 @@ if uploaded_file is not None:
                 "not mutually independent."
             )
 
+
         st.caption(
             "Note: The 0.05 tolerance is used only as an "
             "educational approximation for this project."
         )
 
-        st.write(
-            f"**Observed P(A ∩ B ∩ C):** {P_ABC:.3f}"
-        )
-
-        st.write(
-            f"**Expected P(A)P(B)P(C):** {expected_ABC:.3f}"
-        )
-
-        st.write(
-            f"**Difference:** {mutual_difference:.3f}"
-        )
-
-        if mutual_difference <= tolerance:
-
-            st.success(
-                "The three inspection stages are "
-                "approximately mutually independent."
-            )
-
-        else:
-
-            st.error(
-                "The three inspection stages are "
-                "not mutually independent."
-            )
-
 
         # --------------------------------------------------
-        # VISUALIZATION
+        # VISUALIZATIONS
         # --------------------------------------------------
 
         st.header("📈 Visualizations")
 
-        # Failure rate chart
-        stages = [
-            "Stage 1",
-            "Stage 2",
-            "Stage 3"
-        ]
 
-        failure_rates = [
-            stage1_rate,
-            stage2_rate,
-            stage3_rate
-        ]
+        # Failure Rate Chart
 
-        fig1, ax1 = plt.subplots(
-            figsize=(8, 5)
-        )
-
-        bars = ax1.bar(
-            stages,
-            failure_rates
-        )
-
-        ax1.set_title(
+        st.subheader(
             "Product Failure Rate by Inspection Stage"
         )
 
-        ax1.set_xlabel(
-            "Inspection Stage"
-        )
 
-        ax1.set_ylabel(
-            "Failure Rate (%)"
-        )
+        failure_chart = pd.DataFrame({
 
-        for bar, value in zip(
-            bars,
-            failure_rates
-        ):
+            "Inspection Stage": [
+                "Stage 1",
+                "Stage 2",
+                "Stage 3"
+            ],
 
-            ax1.text(
-                bar.get_x() + bar.get_width() / 2,
-                value + 0.5,
-                f"{value:.1f}%",
-                ha="center"
+            "Failure Rate (%)": [
+                stage1_rate,
+                stage2_rate,
+                stage3_rate
+            ]
+
+        })
+
+
+        st.bar_chart(
+            failure_chart.set_index(
+                "Inspection Stage"
             )
-
-        ax1.set_ylim(
-            0,
-            max(failure_rates) + 10
         )
-
-        st.pyplot(fig1)
 
 
         # --------------------------------------------------
@@ -541,76 +625,45 @@ if uploaded_file is not None:
             "Observed vs Expected Joint Probabilities"
         )
 
-        pairs = [
-            "A & B",
-            "A & C",
-            "B & C"
-        ]
 
-        observed = [
-            P_AB,
-            P_AC,
-            P_BC
-        ]
+        comparison_chart = pd.DataFrame({
 
-        expected = [
-            expected_AB,
-            expected_AC,
-            expected_BC
-        ]
+            "A & B": [
+                P_AB,
+                expected_AB
+            ],
 
-        x = np.arange(
-            len(pairs)
+            "A & C": [
+                P_AC,
+                expected_AC
+            ],
+
+            "B & C": [
+                P_BC,
+                expected_BC
+            ]
+
+        }, index=[
+
+            "Observed",
+            "Expected if Independent"
+
+        ])
+
+
+        st.bar_chart(
+            comparison_chart
         )
-
-        width = 0.35
-
-        fig2, ax2 = plt.subplots(
-            figsize=(9, 5)
-        )
-
-        ax2.bar(
-            x - width / 2,
-            observed,
-            width,
-            label="Observed"
-        )
-
-        ax2.bar(
-            x + width / 2,
-            expected,
-            width,
-            label="Expected if Independent"
-        )
-
-        ax2.set_xticks(x)
-
-        ax2.set_xticklabels(
-            pairs
-        )
-
-        ax2.set_xlabel(
-            "Event Pair"
-        )
-
-        ax2.set_ylabel(
-            "Probability"
-        )
-
-        ax2.set_title(
-            "Observed vs Expected Joint Probabilities"
-        )
-
-        ax2.legend()
-
-        st.pyplot(fig2)
 
 
         # --------------------------------------------------
-        # RAW DATA
+        # INSPECTION DATA
         # --------------------------------------------------
 
-        st.header("📋 Inspection Data")
+        st.header(
+            "📋 Inspection Data"
+        )
+
 
         st.dataframe(
             data,
@@ -618,13 +671,29 @@ if uploaded_file is not None:
             hide_index=True
         )
 
+
+        # --------------------------------------------------
+        # DOWNLOAD DATA
+        # --------------------------------------------------
+
         st.download_button(
+
             label="⬇️ Download Inspection Data",
-            data=data.to_csv(index=False),
-            file_name="smartinspect_results.csv",
+
+            data=data.to_csv(
+                index=False
+            ),
+
+            file_name=
+                "smartinspect_results.csv",
+
             mime="text/csv"
         )
 
+
+    # --------------------------------------------------
+    # INVALID CSV
+    # --------------------------------------------------
 
     else:
 
@@ -633,6 +702,10 @@ if uploaded_file is not None:
             "Product_ID, Stage_1, Stage_2 and Stage_3 columns."
         )
 
+
+# --------------------------------------------------
+# NO FILE UPLOADED
+# --------------------------------------------------
 
 else:
 
